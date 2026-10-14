@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>XML & JSON Lab</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        section { margin: 3rem 0; }
+        .card { border: 1px solid #ccc; padding: 1rem; margin: 0.8rem 0; border-radius: 6px; background: #fafafa; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <h1>XML Book Catalogue &amp; JSON User Profiles Lab</h1>
+
+    <section>
+        <h2>Book Catalogue (Loaded from book.xml)</h2>
+        <div id="bookContainer"></div>
+    </section>
+
+    <section>
+        <h2>User Profiles (Loaded from userProfiles.json)</h2>
+        <div id="userContainer"></div>
+    </section>
+
+<script>
+// ========= XML Lab: fetch & parse book.xml =========
+async function loadBooks() {
+    try {
+        const res = await fetch("book.xml");
+        if (!res.ok) throw new Error("Fetch error: " + res.status);
+        const xmlText = await res.text();
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+        const books = xmlDoc.querySelectorAll("book");
+        const container = document.getElementById("bookContainer");
+        container.innerHTML = "";
+
+        books.forEach(book => {
+            const id = book.getAttribute("id");
+            const title = book.querySelector("title").textContent;
+            const author = book.querySelector("author").textContent;
+            const price = book.querySelector("price").textContent;
+
+            const div = document.createElement("div");
+            div.className = "card";
+            div.innerHTML =
+                "<p><strong>Book ID:</strong> " + id + "</p>" +
+                "<p><strong>Title:</strong> " + title + "</p>" +
+                "<p><strong>Author:</strong> " + author + "</p>" +
+                "<p><strong>Price:</strong> $" + price + "</p>";
+            container.appendChild(div);
+        });
+    } catch (err) {
+        console.error("Fetch error: " + err.message);
+        document.getElementById("bookContainer").innerText = "Error loading books: " + err.message;
+    }
+}
+
+// ========= JSON Lab: fetch & parse userProfiles.json =========
+function loadUsers() {
+    fetch('userProfiles.json')
+        .then(response => {
+            if (!response.ok)
+                throw new Error('Fetch error: ' + response.status);
+            else
+                return response.json();
+        })
+        .then(json => {
+            const container = document.getElementById("userContainer");
+            container.innerHTML = "";
+            json.forEach(user => {
+                const div = document.createElement("div");
+                div.className = "card";
+                div.innerHTML =
+                    "<p><strong>Name:</strong> " + user.firstName + " " + user.lastName + "</p>" +
+                    "<p><strong>Email:</strong> " + user.email + "</p>" +
+                    "<p><strong>Date of Birth:</strong> " + user.dateOfBirth + "</p>" +
+                    "<p><strong>Address:</strong> " + user.address.street + ", " + user.address.city + ", " + user.address.state + " " + user.address.zipCode + "</p>" +
+                    "<p><strong>Preferences:</strong> Theme: " + user.preferences.theme +
+                    " | Language: " + user.preferences.language +
+                    " | Notifications: " + user.preferences.notifications +
+                    " | Newsletter Subscribed: " + user.preferences.subscription + "</p>";
+                container.appendChild(div);
+            });
+        })
+        .catch(err => console.error('Fetch error: ' + err.message));
+}
+
+// run on page load
+window.onload = function () {
+    loadBooks();
+    loadUsers();
+};
+</script>
+</body>
+</html>
